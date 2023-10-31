@@ -5,7 +5,6 @@ const api_key = import.meta.env.VITE_OPEN_WEATHER_KEY
 export const App = () => {
 
   const [allCountries, setAllCountries] = useState([])
-  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [countryToShow, setCountryToShow] = useState('')
 
