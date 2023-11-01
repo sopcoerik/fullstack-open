@@ -1,11 +1,14 @@
 const express = require('express')
 const cors = require('cors')
+require('dotenv').config()
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 app.use(express.static('dist'))
+
+const Note = require('./models/notes')
 
 let notes = [
     {
@@ -29,14 +32,10 @@ app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
 })
 
-app.get('/api/notes', (request, response) => {
-    response.json(notes)
-})
+app.get('/api/notes', (request, response) => Note.find({}).then(notes => response.json(notes)))
 
 app.get('/api/notes/:id', (request, response) => {
-    const id = +request.params.id
-    const note = notes.find(note => note.id === id)
-    note ? response.json(note) : response.status(404).send('<h1>404 | Note not found!</h1>')
+    Note.findById(request.params.id).then(note => response.json(note))
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -45,8 +44,6 @@ app.delete('/api/notes/:id', (request, response) => {
 
     response.status(204).end()
 })
-
-const generateId = () => notes.length > 0 ? Math.max(...notes.map(n => n.id)) + 1 : 0
 
 app.post('/api/notes', (request, response) => {
     const body = request.body
@@ -57,17 +54,14 @@ app.post('/api/notes', (request, response) => {
         })
     }
 
-    const note = {
+    const note = new Note({
         content: body.content,
-        important: body.important || false,
-        id: generateId()   
-    }
+        important: body.important || false
+    })
 
-    notes = notes.concat(note)
-
-    response.json(note)
+    note.save().then(savedNote => response.json(savedNote))
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT)
 console.log(`Server running on port ${PORT}`)
