@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from 'react'
 import services from "./services/persons"
 
@@ -12,17 +13,58 @@ export const App = () => {
   const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
-    services.getAll().then(response => setPersons(response))
+    services.getAll().then(persons => setPersons(persons))
   }, [])
 
   const onFormInputChange = (e) => setNewPerson({...newPerson, [e.target.name]: e.target.value})
   const onSearchInputChange = (e) => setSearchInput(e.target.value)
   const saveNewPerson = (person) => setPersons(persons.concat(person))
-  const deletePerson = (personId) => services.remove(personId).then(r => setPersons(persons.filter(pers => pers.id !== personId))).catch(e => {setErrorMessage("Data already removed from server"); setTimeout(() => setErrorMessage(''), 5000)})
-  const updatePerson = (personId, newPerson) => services.update(personId, newPerson).then(resp => setPersons(persons.map(pers => pers.id !== resp.id ? pers : resp)))
+  
+  const resetSuccessMessage = () => setTimeout(() => setSuccessMessage(''), 5000)
+  const resetErrorMessage = () => setTimeout(() => setErrorMessage(''), 5000)
 
-  const sendNewPerson = (person) => {
-    services.create(person).then(response => saveNewPerson(response))
+  const handleSuccessMessage = (message) => {
+    setSuccessMessage(message)
+    resetSuccessMessage()
+  }
+
+  const handleErrorMessage = (message) => {
+    setErrorMessage(message)
+    resetErrorMessage()
+  }
+
+  const deletePerson = (personId) => {
+    services.remove(personId)
+    .then(() => {
+      const person = persons.find(p => p.id === personId)
+      setPersons(persons.filter(pers => pers.id !== personId))
+      handleSuccessMessage(`Deleted ${person.name}`)
+    })
+    .catch(() => {
+      handleErrorMessage("Data already removed from server")
+    })
+  }
+  
+  const updatePerson = (personId, newPerson) => {
+    services.update(personId, newPerson)
+    .then(resp => {
+      setPersons(persons.map(pers => pers.id !== resp.id ? pers : resp))
+      handleSuccessMessage(`Updated number for ${newPerson.name}`)
+    })
+    .catch(error => {
+      handleErrorMessage(error.response.data.error)
+    })
+  }
+
+  const createPerson = (person) => {
+    services.create(person)
+    .then(newPerson => {
+      saveNewPerson(newPerson)
+      handleSuccessMessage(`Added ${newPerson.name}`)
+    })
+    .catch(err => {
+      handleErrorMessage(err.response.data.error)
+    })
   }
 
   const onFormSubmit = (e) => {
@@ -30,20 +72,11 @@ export const App = () => {
 
     const presentPerson = persons.find(person => person.name.toLowerCase() === newPerson.name.toLowerCase())
 
-    try{
-      if(presentPerson) {
-        const userConfirm = confirm(`${newPerson.name} is already added to phonebook, replace the old number with a new one?`)
-        userConfirm && updatePerson(presentPerson.id, newPerson)
-        userConfirm && setSuccessMessage(`Updated number for ${newPerson.name}`)
-        userConfirm && setTimeout(() => setSuccessMessage(''), 5000)
-      } else {
-        sendNewPerson(newPerson)
-        setSuccessMessage(`Added ${newPerson.name}`)
-        setTimeout(() => setSuccessMessage(''), 5000)
-      }
-    } catch(e) {
-      setErrorMessage(`Failed to add person to list`)
-      setTimeout(() => setErrorMessage(''), 5000)
+    if(presentPerson) {
+      const userConfirm = confirm(`${newPerson.name} is already added to phonebook, replace the old number with a new one?`)
+      userConfirm && updatePerson(presentPerson.id, newPerson)
+    } else {
+      createPerson(newPerson)
     }
 
     setNewPerson({

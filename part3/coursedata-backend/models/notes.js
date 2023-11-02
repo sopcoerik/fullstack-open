@@ -8,20 +8,24 @@ mongoose.set('strictQuery',false)
 console.log('connecting to MongoDB database')
 
 mongoose.connect(url)
-    .then(res => console.log('connected to MongoDB database'))
-    .catch(err => console.log('error connecting to MongoDB database: ', err.message))
+  .then(() => console.log('connected to MongoDB database'))
+  .catch(err => console.log('error connecting to MongoDB database: ', err.message))
 
 const noteSchema = new mongoose.Schema({
-    content: String,
-    important: Boolean,
+  content: {
+    type: String,
+    minLength: 5,
+    required: true
+  },
+  important: Boolean,
 })
-    
+
 noteSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
+  transform: (returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 module.exports = mongoose.model('Note', noteSchema)

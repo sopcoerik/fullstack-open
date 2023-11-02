@@ -9,6 +9,8 @@
     "build:ui": "rm -rf dist && cd ../coursedata/ && npm run build && cp -r dist ../coursedata-backend",
     "deploy": "~/.fly/bin/fly deploy",
     "deploy:full": "npm run build:ui && npm run deploy",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Sopco Erik",
@@ -21,6 +23,8 @@
   },
   "devDependencies": {
     "@flydotio/dockerfile": "^0.4.10",
+    "eslint": "^8.52.0",
+    "eslint-plugin-react": "^7.33.2",
     "nodemon": "^3.0.1"
   }
 }
