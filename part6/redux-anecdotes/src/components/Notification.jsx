@@ -1,9 +1,6 @@
-import { useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { clearNotification } from "../reducers/notificationSlice"
+import { useSelector } from "react-redux"
 
-const Notification = () => {
-  const dispatch = useDispatch()
+export const Notification = () => {
   const notification = useSelector(state => state.notification)
 
   const style = {
@@ -12,19 +9,9 @@ const Notification = () => {
     borderWidth: 1
   }
 
-  useEffect(() => {
-    if(notification.length) {
-      setTimeout(() => {
-        dispatch(clearNotification())
-      }, 5000)
-    }
-  }, [notification, dispatch])
-
   return (
-    <div style={style}>
+    notification && <div style={style}>
       { notification }
     </div>
   )
 }
-
-export default Notification
