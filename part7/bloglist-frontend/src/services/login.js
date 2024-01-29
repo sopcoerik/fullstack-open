@@ -3,10 +3,10 @@ const baseUrl = '/api/login'
 
 let token
 
-const login = async (user) => {
-  const response = await axios.post(baseUrl, user, token)
+const login = async user => {
+	const response = await axios.post(baseUrl, user, token)
 
-  return response.data
+	return response.data
 }
 
 export default { login }
